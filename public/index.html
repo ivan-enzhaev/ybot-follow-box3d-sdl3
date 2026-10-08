@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
+            background-color: #222;
+        }
+
+        #canvas {
+            width: 100vw !important;
+            height: 100vh !important;
+            display: block;
+            outline: none;
+        }
+
+        .repo-link {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #fff;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body style="caret-color: transparent;">
+    <canvas id="canvas"></canvas>
+
+    <p class="repo-link">
+        <a href="https://ybot-follow-box3d-sdl3.vercel.app" target="_blank" rel="noopener noreferrer" style="color: white;">GitHub repository</a>
+    </p>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+
+        window.Module = window.Module || {};
+        window.Module.canvas = canvas;
+        window.Module.disableCanvasResizing = true;
+        window.Module.resizeCanvas = false;
+
+        function updateCanvasDimensions() {
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const height = window.innerHeight || document.documentElement.clientHeight;
+
+            if (width <= 0 || height <= 0) return;
+
+            // Use 1.0 DPR on WebAssembly to keep 1:1 parity with SDL3 logical window coordinates
+            const dpr = 1.0; 
+            const pixelWidth = Math.floor(width * dpr);
+            const pixelHeight = Math.floor(height * dpr);
+
+            if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+                canvas.width = pixelWidth;
+                canvas.height = pixelHeight;
+
+                if (typeof Module.setCanvasSize === 'function') {
+                    Module.setCanvasSize(pixelWidth, pixelHeight, false);
+                }
+            }
+        }
+
+        let resizeTimer = null;
+        function handleResizeEvent() {
+            updateCanvasDimensions();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(updateCanvasDimensions, 100);
+            setTimeout(updateCanvasDimensions, 300);
+        }
+
+        window.addEventListener('resize', handleResizeEvent);
+        window.addEventListener('orientationchange', handleResizeEvent);
+        window.addEventListener('pageshow', handleResizeEvent);
+
+        window.Module.onRuntimeInitialized = () => {
+            handleResizeEvent();
+        };
+    </script>
+
+    <script async src="./js/app.js"></script>
+</body>
+
+</html>
